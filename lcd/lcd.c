@@ -266,7 +266,7 @@ void display_char_inverted(char c)
     write_data16(x);
     write_cmd(MEMORY_WRITE);
     for(y=sp; y<=ep; y++)
-        write_data16(display.background);
+        write_data16(display.foreground);
 
     display.x += 6;
     if (display.x >= display.width) { display.x=0; display.y+=8; }
