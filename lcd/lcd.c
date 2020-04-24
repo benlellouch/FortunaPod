@@ -231,11 +231,59 @@ void display_char(char c)
     if (display.x >= display.width) { display.x=0; display.y+=8; }
 }
 
+void display_char_inverted(char c)
+{
+    uint16_t x, y;
+    PGM_P fdata; 
+    uint8_t bits, mask;
+    uint16_t sc=display.x, ec=display.x + 4, sp=display.y, ep=display.y + 7;
+
+    /*   New line starts a new line, or if the end of the
+         display has been reached, clears the display.
+    */
+    if (c == '\n') { 
+        display.x=0; display.y+=8;
+        if (display.y >= display.height) { clear_screen(); }
+        return;
+    }
+
+    if (c < 32 || c > 126) return;
+    fdata = (c - ' ')*5 + font5x7;
+    write_cmd(PAGE_ADDRESS_SET);
+    write_data16(sp);
+    write_data16(ep);
+    for(x=sc; x<=ec; x++) {
+        write_cmd(COLUMN_ADDRESS_SET);
+        write_data16(x);
+        write_data16(x);
+        write_cmd(MEMORY_WRITE);
+        bits = pgm_read_byte(fdata++);
+        for(y=sp, mask=0x01; y<=ep; y++, mask<<=1)
+            write_data16((bits & mask) ? display.background : display.foreground);
+    }
+    write_cmd(COLUMN_ADDRESS_SET);
+    write_data16(x);
+    write_data16(x);
+    write_cmd(MEMORY_WRITE);
+    for(y=sp; y<=ep; y++)
+        write_data16(display.background);
+
+    display.x += 6;
+    if (display.x >= display.width) { display.x=0; display.y+=8; }
+}
+
 void display_string(char *str)
 {
     uint8_t i;
     for(i=0; str[i]; i++) 
         display_char(str[i]);
+}
+
+void display_string_inverted(char *str)
+{
+    uint8_t i;
+    for(i=0; str[i]; i++) 
+        display_char_inverted(str[i]);
 }
 
 void display_string_xy(char *str, uint16_t x, uint16_t y)

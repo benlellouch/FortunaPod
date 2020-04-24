@@ -44,6 +44,8 @@ void clear_screen();
 void fill_rectangle(rectangle r, uint16_t col);
 void fill_rectangle_indexed(rectangle r, uint16_t* col);
 void display_char(char c);
+void display_char_inverted(char c);
 void display_string(char *str);
+void display_string_inverted(char *str);
 void display_string_xy(char *str, uint16_t x, uint16_t y);
 void display_register(uint8_t reg);

@@ -12,7 +12,7 @@
 #define _AUDIO_H
 
 #ifndef _FATFS
-#include "ff.h"
+#include "../fatfs/ff.h"
 #endif
 
 #ifndef _STDINT_H 
