@@ -295,6 +295,15 @@ void display_string_xy(char *str, uint16_t x, uint16_t y)
         display_char(str[i]);
 }
 
+void display_string_xy_inverted(char *str, uint16_t x, uint16_t y)
+{
+    uint8_t i;
+    display.x = x;
+    display.y = y;
+    for(i=0; str[i]; i++)
+        display_char_inverted(str[i]);
+}
+
 void display_register(uint8_t reg)
 {
 	uint8_t i;
