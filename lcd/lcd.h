@@ -5,20 +5,22 @@
  
 #include <avr/io.h>
 #include <stdint.h>
+#include "printf.h"
+#include "svgrgb565.h"
 
 
 #define LCDWIDTH	240
 #define LCDHEIGHT	320
 
 /* Colour definitions RGB565 */
-#define WHITE       0xFFFF
-#define BLACK       0x0000
-#define BLUE        0x001F      
-#define GREEN       0x07E0      
-#define CYAN        0x07FF      
-#define RED         0xF800      
-#define MAGENTA     0xF81F      
-#define YELLOW      0xFFE0      
+// #define WHITE       0xFFFF
+// #define BLACK       0x0000
+// #define BLUE        0x001F      
+// #define GREEN       0x07E0      
+// #define CYAN        0x07FF      
+// #define RED         0xF800      
+// #define MAGENTA     0xF81F      
+// #define YELLOW      0xFFE0      
 
 typedef enum {North, West, South, East} orientation;
 
