@@ -241,10 +241,6 @@ void show_music_controls()
 
 void draw_pause_button(int x, int y)
 {
-	// rectangle outer_rec = {x ,x + 66, y , y + 66 };
-	// rectangle inner_rec = { x + 3 , x + 63 , y + 3 , y + 63 };
-	// fill_rectangle(outer_rec, WHITE);
-	// fill_rectangle(inner_rec, BLACK);
 	rectangle outer_rec1 = {x, x + 24,  y , y + 64};
 	rectangle inner_rec1 = {x + 2, x + 22, y + 2, y + 62};
 	rectangle outer_rec2 = {x + 48,  x + 72, y, y + 64};
@@ -340,11 +336,19 @@ int check_switches(int state)
 			if(!DUMMY)
 			{
 				FIL song;
-				f_open(&song, songs[cursor].fname,FA_READ);
+				FRESULT res = f_open(&song, songs[cursor].fname,FA_READ);
+				if (res == FR_OK)
+				{
 				audio_load(&song);
+				}
+				else
+				{
+					clear_screen();
+					display_string("could not load songs. please restart system");
+				}
 			}
-			current_song = songs[cursor].fname;
-			song_playing(songs[cursor].fname);
+			// current_song = songs[cursor].fname;
+			// song_playing(songs[cursor].fname);
 		}
 	}
 
@@ -410,14 +414,65 @@ void generate_dummy_songs()
 	num_of_songs = 3;
 }
 
+void check_for_sdcard()
+{
+	if(get_switch_long(_BV(OS_CD)))
+	{
+	if(DUMMY)
+		{
+			generate_dummy_songs();
+			set_up_screen();
+			os_add_button_tasks();
+		}
+		else
+		{
+			FATFS FatFs;
+			DIR dir;
+			if(f_mount(&FatFs, "",0) == FR_OK)
+			{
+				FRESULT res = f_opendir(&dir, "/");
+				printf("%d", (int)res);
+				if ( res == FR_OK)
+				{
+					FILINFO info;
+					FRESULT res = f_readdir(&dir, &info);
+					while((res == FR_OK) && (num_of_songs < MAX_SONGS) && (info.fname[0] != 0))
+					{
+						songs[num_of_songs] = info;
+						num_of_songs ++;
+						res = f_readdir(&dir, &info);
+					}
+
+					set_up_screen();
+					os_add_button_tasks();
+
+				}
+				else
+				{
+					display_string(" \n cannot open directory");
+				}
+			}
+			else
+			{
+				display_string("Failed to mount drive");
+			}
+		}
+	}
+}
+
 void os_init()
 {	
-	set_up_screen();
+	init_lcd();
 	os_init_scheduler();
 	os_init_ruota();
+	os_add_task(check_for_sdcard, 100, 0);
+	sei();
+}
+
+void os_add_button_tasks()
+{
 	os_add_task(collect_delta, 100, 0);
 	os_add_task(check_switches, 100, 0);
-	sei();
 }
 
 int main(void) {
@@ -426,47 +481,8 @@ int main(void) {
     CLKPR = (1 << CLKPCE);
     CLKPR = 0;
 
-	init_lcd();
+	os_init();
 
-	if(DUMMY)
-	{
-		generate_dummy_songs();
-		os_init();
-	}
-	else
-	{
-		FATFS FatFs;
-		DIR dir;
-		if(f_mount(&FatFs, "",0) == FR_OK)
-		{
-			FRESULT res = f_opendir(&dir, "/");
-			printf("%d", (int)res);
-			if ( res == FR_OK)
-			{
-				FILINFO info;
-				FRESULT res = f_readdir(&dir, &info);
-				while((res == FR_OK) && (num_of_songs < MAX_SONGS) && (info.fname[0] != 0))
-				{
-					songs[num_of_songs] = info;
-					num_of_songs ++;
-					res = f_readdir(&dir, &info);
-				}
-
-				os_init();
-
-
-			}
-			else
-			{
-				display_string(" \n cannot open directory");
-			}
-		}
-		else
-		{
-			display_string("Failed to mount drive");
-		}
-	}
-	
 	for(;;);
 }
 
