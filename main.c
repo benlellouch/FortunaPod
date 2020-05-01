@@ -6,8 +6,7 @@
 
 
 #include "audio/audio.h"
-// #include "lcd/lcd.h"
-#include "lcd/bresenham.h"
+#include "graphics/music_gfx.h"
 #include "ruota/ruota.h"
 #include "rios/rios.h"
 
@@ -16,7 +15,12 @@
 #define CURSOR_DOWN 0
 #define CURSOR_VISUAL_OFFSET_Y 15
 #define CURSOR_VISUAL_OFFSET_X 4
-#define DUMMY false
+#define BUTTON_SCALE 0.5
+#define BUTTON_Y 200
+#define PAUSE_BUTTON_X 142
+#define FFORWARD_BUTTON_X 210
+#define FBACKWARD_BUTTON_X 110
+#define DUMMY true
 
 typedef enum 
 {
@@ -29,7 +33,8 @@ FILINFO songs[MAX_SONGS];
 uint8_t cursor = 0;
 uint8_t control_cursor = 0;
 uint8_t num_of_songs = 0;
-char* current_song = "";
+int current_song = -1;
+int next_song = -1;
 SCREEN_CONTEXT current_context = SONG_SELECT;
 
 
@@ -74,28 +79,22 @@ void update_control_cursor()
 {
 	if(control_cursor == 0)
 	{
-		draw_pause_button(120, 160);
-		draw_fbackward_button_selected(95,160);
+		draw_pause_button(PAUSE_BUTTON_X, BUTTON_Y, BUTTON_SCALE);
+		draw_fbackward_button_selected(FBACKWARD_BUTTON_X,BUTTON_Y ,BUTTON_SCALE);
 	}
 	else if (control_cursor == 1)
 	{
-		draw_pause_button_selected(120, 160);
-		draw_fforward_button(220, 160);
-		draw_fbackward_button(95,160);
+		draw_pause_button_selected(PAUSE_BUTTON_X, BUTTON_Y, BUTTON_SCALE);
+		draw_fforward_button(FFORWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
+		draw_fbackward_button(FBACKWARD_BUTTON_X,BUTTON_Y ,BUTTON_SCALE);
 	}
 	else if (control_cursor == 2)
 	{
-		draw_fforward_button_selected(220, 160);
-		draw_pause_button(120, 160);
+		draw_fforward_button_selected(FFORWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
+		draw_pause_button(PAUSE_BUTTON_X, BUTTON_Y, BUTTON_SCALE);
 	}
 }
 
-
-void draw_horizontal_delimiter(int y)
-{
-	rectangle rect = {0, 319, y, y + 1};
-	fill_rectangle(rect, WHITE);
-}
 
 void boot_screen_animation()
 {
@@ -129,42 +128,61 @@ void no_song_playing()
 	}
 	else if (current_context == MUSIC_CONTROL)
 	{
-	display_string_xy("No song playing", 120 , 122);
+	display_string_xy("No song playing", 120 , 180);
 	}
 }
 
-void song_playing(char* song)
+void song_playing()
 {
 	if (current_context == SONG_SELECT)
 	{
 		rectangle rect = {0, 319, 229, LCDWIDTH};
 		char playing[] = "Playing: ";
-		strcat(playing, song);
+		strcat(playing, songs[current_song].fname);
 		strcat(playing, "     ");
 		fill_rectangle(rect, BLACK);
 		display_string_xy(playing, 110, 229);
 	}
 	else if (current_context == MUSIC_CONTROL)
 	{
-		rectangle rect = {0, 319, 122, 131};
+		rectangle rect = {0, 319, 180, 190};
 		char playing[] = "Playing: ";
-		strcat(playing, song);
+		strcat(playing, songs[current_song].fname);
 		strcat(playing, "     ");
 		fill_rectangle(rect, BLACK);
-		display_string_xy(playing, 110, 122);		
+		display_string_xy(playing, 110, 180);		
 	}
 
 }
 
+int check_next_song(int state)
+{
+	if(!audio_isplaying() && (next_song > -1))
+	{
+		current_song = next_song;
+		next_song = -1;
+		if(!DUMMY)
+		{
+			FIL song;
+			f_open(&song, songs[next_song].fname, FA_READ);
+			audio_load(&song);
+		}
+
+
+	}
+
+	return state;
+}
+
 void check_song_playing()
 {
-	if(strcmp(current_song, "") == 0)
+	if(current_song == -1)
 	{
 		no_song_playing();
 	}
 	else
 	{
-		song_playing(current_song);
+		song_playing();
 	}
 }
 
@@ -230,106 +248,23 @@ void show_music_controls()
 {
 	rectangle rect = {0, 319, 120, 239};
 	fill_rectangle(rect, BLACK);
-	draw_horizontal_delimiter(120);
-	check_song_playing();
-	draw_pause_button(120, 160);
-	draw_fforward_button(220, 160);
-	draw_fbackward_button(95, 160);
+	draw_horizontal_delimiter(175);
+	draw_pause_button(PAUSE_BUTTON_X, BUTTON_Y, BUTTON_SCALE);
+	draw_fforward_button(FFORWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
+	draw_fbackward_button(FBACKWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
 	control_cursor = 1;
 	update_control_cursor();
+	check_song_playing();
 }
 
-void draw_pause_button(int x, int y)
+void hide_music_controls()
 {
-	// rectangle outer_rec = {x ,x + 66, y , y + 66 };
-	// rectangle inner_rec = { x + 3 , x + 63 , y + 3 , y + 63 };
-	// fill_rectangle(outer_rec, WHITE);
-	// fill_rectangle(inner_rec, BLACK);
-	rectangle outer_rec1 = {x, x + 24,  y , y + 64};
-	rectangle inner_rec1 = {x + 2, x + 22, y + 2, y + 62};
-	rectangle outer_rec2 = {x + 48,  x + 72, y, y + 64};
-	rectangle inner_rec2 = {x + 50, x + 70, y + 2 , y + 62};
-	fill_rectangle(outer_rec1, WHITE);
-	fill_rectangle(outer_rec2, WHITE);
-	fill_rectangle(inner_rec1, BLACK);
-	fill_rectangle(inner_rec2, BLACK);
+	draw_rectangle(0, LCDHEIGHT, 175, LCDWIDTH, BLACK);
+	draw_horizontal_delimiter(227);
+	check_song_playing();
 }
 
-void draw_pause_button_selected(int x, int y)
-{
-	rectangle outer_rec1 = {x, x + 24,  y , y + 64};
-	rectangle outer_rec2 = {x + 48,  x + 72, y, y + 64};
-	fill_rectangle(outer_rec1, WHITE);
-	fill_rectangle(outer_rec2, WHITE);	
-}
 
-void draw_fforward_button(int x, int y)
-{
-	drawLine(x, y , x , y + 64, WHITE);
-	drawLine(x , y, x + 32, y + 32, WHITE);
-	drawLine(x , y + 64, x +32, y +32, WHITE);
-	int fill_y = y + 1;
-	int fill_x = x;
-	int length = 62;
-	while(fill_x < (x + 32))
-	{
-		fill_x += 1;
-		fill_y += 1;
-		length -= 2;
-		drawLine(fill_x, fill_y, fill_x, fill_y + length, BLACK); 
-	}
-}
-
-void draw_fforward_button_selected(int x, int y)
-{
-	drawLine(x, y , x , y + 64, WHITE);
-	drawLine(x , y, x + 32, y + 32, WHITE);
-	drawLine(x , y + 64, x +32, y +32, WHITE);
-	int fill_y = y;
-	int fill_x = x;
-	int length = 64;
-	while(fill_x < (x + 32))
-	{
-		fill_x += 1;
-		fill_y += 1;
-		length -= 2;
-		drawLine(fill_x, fill_y, fill_x, fill_y + length, WHITE); 
-	}
-}
-
-void draw_fbackward_button(int x, int y)
-{
-	drawLine(x, y , x , y + 64, WHITE);
-	drawLine(x , y, x - 32, y + 32, WHITE);
-	drawLine(x , y + 64, x - 32, y +32, WHITE);
-	int fill_y = y + 1;
-	int fill_x = x;
-	int length = 62;
-	while(fill_x > (x - 32))
-	{
-		fill_x -= 1;
-		fill_y += 1;
-		length -= 2;
-		drawLine(fill_x, fill_y, fill_x, fill_y + length, BLACK); 
-	}
-}
-
-void draw_fbackward_button_selected(int x, int y)
-{
-	drawLine(x, y , x , y + 64, WHITE);
-	drawLine(x , y, x - 32, y + 32, WHITE);
-	drawLine(x , y + 64, x - 32, y +32, WHITE);
-	int fill_y = y;
-	int fill_x = x;
-	int length = 64;
-	while(fill_x > (x - 32))
-	{
-		fill_x -= 1;
-		fill_y += 1;
-		length -= 2;
-		drawLine(fill_x, fill_y, fill_x, fill_y + length, WHITE); 
-	}
-}
 
 int check_switches(int state)
 {
@@ -337,61 +272,117 @@ int check_switches(int state)
 	{
 		if(current_context == SONG_SELECT)
 		{
+			current_song = cursor;
+			check_song_playing();
 			if(!DUMMY)
 			{
 				FIL song;
+				//TODO check for FR_RESULT
 				f_open(&song, songs[cursor].fname,FA_READ);
 				audio_load(&song);
 			}
-			current_song = songs[cursor].fname;
-			song_playing(songs[cursor].fname);
+
 		}
 	}
+	return state;
+}
 
-	if (get_switch_press(_BV(SWS)))
+void play_previous_song()
+{
+	if (current_song > 0 && audio_isplaying())
 	{
-		if(current_context == SONG_SELECT)
+		next_song = current_song - 1;
+		audio_close();
+	}
+	else
+	{
+		next_song = num_of_songs - 1;
+		audio_close();
+	}
+}
+
+void pause_song()
+{
+	if(audio_isplaying())
+	{
+		audio_close();
+	}
+}
+
+void play_next_song()
+{
+	if(current_song < (num_of_songs - 1) && audio_isplaying())
+	{
+		next_song = current_song + 1;
+		audio_close();
+	}
+	else
+	{
+		next_song = 0;
+		audio_close();
+	}
+
+}
+
+
+int check_music_controls(int state)
+{
+
+	if(current_context == SONG_SELECT)
+	{
+		if (get_switch_press(_BV(SWS)))
 		{
-			current_context = MUSIC_CONTROL;
-			show_music_controls();
+			
+				current_context = MUSIC_CONTROL;
+				show_music_controls();
+		} 
+	}
+
+	if(current_context == MUSIC_CONTROL)
+	{
+		if (get_switch_press(_BV(SWC)))
+		{
+			switch (control_cursor)
+			{
+			case 0:
+				play_previous_song();
+				break;
+			case 1:
+				pause_song();
+				break;
+			case 2:
+				play_next_song();
+				break;		
+			default:
+				break;
+			}
 		}
-	} 
 
-	if (get_switch_press(_BV(SWN)))
-	{
-		if(current_context == MUSIC_CONTROL)
-		{
+
+		if (get_switch_press(_BV(SWN)))
+		{		
 			current_context = SONG_SELECT;
-			display_home_screen();
+			hide_music_controls();
 		}
-	}
 
-	if (get_switch_press(_BV(SWE)))
-	{
-		if (current_context == MUSIC_CONTROL)
+		if (get_switch_press(_BV(SWE)))
 		{
 			if (control_cursor < 2)
 			{
 				control_cursor++;
 				update_control_cursor();
-			}
+			}	
 		}
-		
-	}
 
-	if(get_switch_press(_BV(SWW)))
-	{
-		if (current_context == MUSIC_CONTROL)
+		if(get_switch_press(_BV(SWW)))
 		{
 			if(control_cursor > 0)
 			{
 				control_cursor -= 1;
 				update_control_cursor();
-			}
-		}		
+			}	
+		}
 	}
-
-
 
 	return state;
 }
@@ -399,7 +390,7 @@ int check_switches(int state)
 void generate_dummy_songs()
 {
 	FILINFO jul;
-	strcpy(jul.fname,"JUL");
+	strcpy(jul.fname,"JUL.wav");
 	songs[0] = jul;
 	FILINFO kaaris;
 	strcpy(kaaris.fname,"Kaari");
@@ -415,6 +406,8 @@ void os_init()
 	set_up_screen();
 	os_init_scheduler();
 	os_init_ruota();
+	os_add_task(check_music_controls, 100, 0);
+	os_add_task(check_next_song, 100, 0);
 	os_add_task(collect_delta, 100, 0);
 	os_add_task(check_switches, 100, 0);
 	sei();
@@ -440,7 +433,10 @@ int main(void) {
 		if(f_mount(&FatFs, "",0) == FR_OK)
 		{
 			FRESULT res = f_opendir(&dir, "/");
-			printf("%d", (int)res);
+			while(res != FR_OK)
+			{
+				res = f_opendir(&dir, "/");
+			}
 			if ( res == FR_OK)
 			{
 				FILINFO info;
