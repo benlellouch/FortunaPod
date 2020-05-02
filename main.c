@@ -16,11 +16,11 @@
 #define CURSOR_VISUAL_OFFSET_Y 15
 #define CURSOR_VISUAL_OFFSET_X 4
 #define BUTTON_SCALE 0.5
-#define BUTTON_Y 200
+#define BUTTON_Y 195
 #define PAUSE_BUTTON_X 142
 #define FFORWARD_BUTTON_X 210
 #define FBACKWARD_BUTTON_X 110
-#define DUMMY true
+#define DUMMY false
 
 typedef enum 
 {
@@ -29,7 +29,7 @@ typedef enum
 }   SCREEN_CONTEXT;
 
 
-FILINFO songs[MAX_SONGS];
+TCHAR songs[MAX_SONGS][13];
 uint8_t cursor = 0;
 uint8_t control_cursor = 0;
 uint8_t num_of_songs = 0;
@@ -46,13 +46,13 @@ void update_cursor(uint8_t cursor_direction)
 	{
 		if(cursor == (num_of_songs - 1))
 		{
-			display_string_xy_inverted(songs[cursor].fname, CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y);
-			display_string_xy(songs[0].fname, CURSOR_VISUAL_OFFSET_X,CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy_inverted(songs[cursor], CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy(songs[0], CURSOR_VISUAL_OFFSET_X,CURSOR_VISUAL_OFFSET_Y);
 		}
 		else
 		{
-			display_string_xy_inverted(songs[cursor].fname, CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y);
-			display_string_xy(songs[cursor + 1].fname, CURSOR_VISUAL_OFFSET_X, ((cursor + 1) * 8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy_inverted(songs[cursor], CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy(songs[cursor + 1], CURSOR_VISUAL_OFFSET_X, ((cursor + 1) * 8) + CURSOR_VISUAL_OFFSET_Y);
 		}
 		
 
@@ -61,13 +61,13 @@ void update_cursor(uint8_t cursor_direction)
 	{
 		if (cursor == 0)
 		{
-			display_string_xy_inverted(songs[cursor].fname, CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y );
-			display_string_xy(songs[num_of_songs - 1].fname, CURSOR_VISUAL_OFFSET_X, ((num_of_songs - 1) * 8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy_inverted(songs[cursor], CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y );
+			display_string_xy(songs[num_of_songs - 1], CURSOR_VISUAL_OFFSET_X, ((num_of_songs - 1) * 8) + CURSOR_VISUAL_OFFSET_Y);
 		}
 		else
 		{
-			display_string_xy_inverted(songs[cursor].fname, CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y );
-			display_string_xy(songs[cursor - 1].fname, CURSOR_VISUAL_OFFSET_X, ((cursor - 1) * 8) + CURSOR_VISUAL_OFFSET_Y );
+			display_string_xy_inverted(songs[cursor], CURSOR_VISUAL_OFFSET_X, (cursor * 8) + CURSOR_VISUAL_OFFSET_Y );
+			display_string_xy(songs[cursor - 1], CURSOR_VISUAL_OFFSET_X, ((cursor - 1) * 8) + CURSOR_VISUAL_OFFSET_Y );
 		}
 		
 
@@ -125,10 +125,12 @@ void no_song_playing()
 	if(current_context == SONG_SELECT)
 	{
 	display_string_xy("No song playing", 120, 230);
+	draw_rectangle(0, LCDHEIGHT, 180, 190, BLACK);
 	}
 	else if (current_context == MUSIC_CONTROL)
 	{
 	display_string_xy("No song playing", 120 , 180);
+	draw_rectangle(0, LCDHEIGHT, 230, LCDWIDTH, BLACK);
 	}
 }
 
@@ -136,23 +138,36 @@ void song_playing()
 {
 	if (current_context == SONG_SELECT)
 	{
-		rectangle rect = {0, 319, 229, LCDWIDTH};
+		draw_rectangle(0, LCDHEIGHT, 180, 190, BLACK);
+		draw_rectangle(160, LCDHEIGHT, 230, LCDWIDTH, BLACK);
 		char playing[] = "Playing: ";
-		strcat(playing, songs[current_song].fname);
-		strcat(playing, "     ");
-		fill_rectangle(rect, BLACK);
 		display_string_xy(playing, 110, 229);
+		display_string_xy(songs[current_song], 160, 229);
+		
 	}
 	else if (current_context == MUSIC_CONTROL)
 	{
-		rectangle rect = {0, 319, 180, 190};
+		draw_rectangle(0, LCDHEIGHT, 230, LCDWIDTH, BLACK);
+		draw_rectangle(160, LCDHEIGHT, 180, 190, BLACK);
 		char playing[] = "Playing: ";
-		strcat(playing, songs[current_song].fname);
-		strcat(playing, "     ");
-		fill_rectangle(rect, BLACK);
-		display_string_xy(playing, 110, 180);		
+		display_string_xy(playing, 110, 180);	
+		display_string_xy(songs[current_song], 160, 180);
 	}
 
+}
+
+int check_song_playing(int state)
+{
+	if(current_song == -1)
+	{
+		no_song_playing();
+	}
+	else
+	{
+		song_playing();
+	}
+
+	return state;
 }
 
 int check_next_song(int state)
@@ -164,7 +179,7 @@ int check_next_song(int state)
 		if(!DUMMY)
 		{
 			FIL song;
-			f_open(&song, songs[next_song].fname, FA_READ);
+			f_open(&song, songs[next_song], FA_READ);
 			audio_load(&song);
 		}
 
@@ -174,17 +189,7 @@ int check_next_song(int state)
 	return state;
 }
 
-void check_song_playing()
-{
-	if(current_song == -1)
-	{
-		no_song_playing();
-	}
-	else
-	{
-		song_playing();
-	}
-}
+
 
 void display_home_screen()
 {
@@ -192,18 +197,18 @@ void display_home_screen()
 	display_string_xy("FORTUNA-POD", 130, 1);
 	draw_horizontal_delimiter(10);
 	draw_horizontal_delimiter(227);
-	check_song_playing();
 	for ( int i = 0; i < num_of_songs; i ++)
 	{
 		if (i == cursor)
 		{
-			display_string_xy_inverted(songs[i].fname, CURSOR_VISUAL_OFFSET_X , (i * 8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy_inverted(songs[i], CURSOR_VISUAL_OFFSET_X , (i * 8) + CURSOR_VISUAL_OFFSET_Y);
 		}
 		else
 		{
-			display_string_xy(songs[i].fname, CURSOR_VISUAL_OFFSET_X, (i*8) + CURSOR_VISUAL_OFFSET_Y);
+			display_string_xy(songs[i], CURSOR_VISUAL_OFFSET_X, (i*8) + CURSOR_VISUAL_OFFSET_Y);
 		}
 	}
+	// check_song_playing(0);
 }
 
 void set_up_screen()
@@ -254,14 +259,14 @@ void show_music_controls()
 	draw_fbackward_button(FBACKWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
 	control_cursor = 1;
 	update_control_cursor();
-	check_song_playing();
+	// check_song_playing(0);
 }
 
 void hide_music_controls()
 {
 	draw_rectangle(0, LCDHEIGHT, 175, LCDWIDTH, BLACK);
 	draw_horizontal_delimiter(227);
-	check_song_playing();
+	// check_song_playing(0);
 }
 
 
@@ -272,15 +277,17 @@ int check_switches(int state)
 	{
 		if(current_context == SONG_SELECT)
 		{
-			current_song = cursor;
-			check_song_playing();
-			if(!DUMMY)
-			{
-				FIL song;
-				//TODO check for FR_RESULT
-				f_open(&song, songs[cursor].fname,FA_READ);
-				audio_load(&song);
-			}
+			// current_song = cursor;
+			// check_song_playing();
+			// if(!DUMMY)
+			// {
+			// 	FIL song;
+			// 	//TODO check for FR_RESULT
+			// 	f_open(&song, songs[cursor],FA_READ);
+			// 	audio_load(&song);
+			// }
+
+			next_song =cursor;
 
 		}
 	}
@@ -389,15 +396,11 @@ int check_music_controls(int state)
 
 void generate_dummy_songs()
 {
-	FILINFO jul;
-	strcpy(jul.fname,"JUL.wav");
-	songs[0] = jul;
-	FILINFO kaaris;
-	strcpy(kaaris.fname,"Kaari");
-	songs[1] = kaaris;
-	FILINFO booba;
-	strcpy(booba.fname,"Booba");
-	songs[2] = booba;
+	strcpy(songs[0], "jul");
+	strcpy(songs[1], "kaaris");
+	strcpy(songs[2], "booba");
+
+
 	num_of_songs = 3;
 }
 
@@ -407,6 +410,7 @@ void os_init()
 	os_init_scheduler();
 	os_init_ruota();
 	os_add_task(check_music_controls, 100, 0);
+	os_add_task(check_song_playing, 300,0);
 	os_add_task(check_next_song, 100, 0);
 	os_add_task(collect_delta, 100, 0);
 	os_add_task(check_switches, 100, 0);
@@ -427,12 +431,12 @@ int main(void) {
 		os_init();
 	}
 	else
-	{
+	{		
 		FATFS FatFs;
 		DIR dir;
 		if(f_mount(&FatFs, "",0) == FR_OK)
 		{
-			FRESULT res = f_opendir(&dir, "/");
+			 FRESULT res = f_opendir(&dir, "/");
 			while(res != FR_OK)
 			{
 				res = f_opendir(&dir, "/");
@@ -443,7 +447,7 @@ int main(void) {
 				FRESULT res = f_readdir(&dir, &info);
 				while((res == FR_OK) && (num_of_songs < MAX_SONGS) && (info.fname[0] != 0))
 				{
-					songs[num_of_songs] = info;
+					strcpy(songs[num_of_songs], info.fname);
 					num_of_songs ++;
 					res = f_readdir(&dir, &info);
 				}
