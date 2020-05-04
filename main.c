@@ -124,11 +124,13 @@ void no_song_playing()
 {
 	if(current_context == SONG_SELECT)
 	{
+	draw_rectangle(0, LCDHEIGHT, 230, LCDWIDTH, BLACK);
 	display_string_xy("No song playing", 120, 230);
 	draw_rectangle(0, LCDHEIGHT, 180, 190, BLACK);
 	}
 	else if (current_context == MUSIC_CONTROL)
 	{
+	draw_rectangle(0, LCDHEIGHT, 180, 190, BLACK);
 	display_string_xy("No song playing", 120 , 180);
 	draw_rectangle(0, LCDHEIGHT, 230, LCDWIDTH, BLACK);
 	}
@@ -158,7 +160,7 @@ void song_playing()
 
 int check_song_playing(int state)
 {
-	if(current_song == -1)
+	if(current_song == -1 || !audio_isplaying())
 	{
 		no_song_playing();
 	}
@@ -179,8 +181,15 @@ int check_next_song(int state)
 		if(!DUMMY)
 		{
 			FIL song;
-			f_open(&song, songs[next_song], FA_READ);
-			audio_load(&song);
+			FRESULT res = f_open(&song, songs[current_song], FA_READ);
+			if (res == FR_OK)
+			{
+				audio_load(&song);
+			}
+			else
+			{
+				display_string("cannot play song");
+			}
 		}
 
 
@@ -411,8 +420,8 @@ void os_init()
 	os_init_ruota();
 	os_add_task(check_music_controls, 100, 0);
 	os_add_task(check_song_playing, 300,0);
-	os_add_task(check_next_song, 100, 0);
 	os_add_task(collect_delta, 100, 0);
+	os_add_task(check_next_song, 100, 0);
 	os_add_task(check_switches, 100, 0);
 	sei();
 }
@@ -447,7 +456,7 @@ int main(void) {
 				FRESULT res = f_readdir(&dir, &info);
 				while((res == FR_OK) && (num_of_songs < MAX_SONGS) && (info.fname[0] != 0))
 				{
-					strcpy(songs[num_of_songs], info.fname);
+					strncpy(songs[num_of_songs],info.fname, 13);
 					num_of_songs ++;
 					res = f_readdir(&dir, &info);
 				}
