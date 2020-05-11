@@ -37,8 +37,6 @@ int current_song = -1;
 int next_song = -1;
 SCREEN_CONTEXT current_context = SONG_SELECT;
 
-
-
 void update_cursor(uint8_t cursor_direction)
 {
 
@@ -268,36 +266,23 @@ void show_music_controls()
 	draw_fbackward_button(FBACKWARD_BUTTON_X, BUTTON_Y,BUTTON_SCALE);
 	control_cursor = 1;
 	update_control_cursor();
-	// check_song_playing(0);
 }
 
 void hide_music_controls()
 {
 	draw_rectangle(0, LCDHEIGHT, 175, LCDWIDTH, BLACK);
 	draw_horizontal_delimiter(227);
-	// check_song_playing(0);
 }
 
 
 
 int check_switches(int state)
 {
-	if (get_switch_press(_BV(SWC))) 
+	if(current_context == SONG_SELECT)
 	{
-		if(current_context == SONG_SELECT)
+		if (get_switch_press(_BV(SWC))) 
 		{
-			// current_song = cursor;
-			// check_song_playing();
-			// if(!DUMMY)
-			// {
-			// 	FIL song;
-			// 	//TODO check for FR_RESULT
-			// 	f_open(&song, songs[cursor],FA_READ);
-			// 	audio_load(&song);
-			// }
-
-			next_song =cursor;
-
+				next_song =cursor;
 		}
 	}
 	return state;
@@ -322,6 +307,10 @@ void pause_song()
 	if(audio_isplaying())
 	{
 		audio_close();
+	}
+	else
+	{
+		next_song = cursor;
 	}
 }
 
@@ -373,7 +362,6 @@ int check_music_controls(int state)
 				break;
 			}
 		}
-
 
 		if (get_switch_press(_BV(SWN)))
 		{		
