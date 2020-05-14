@@ -272,21 +272,21 @@ void display_char_inverted(char c)
     if (display.x >= display.width) { display.x=0; display.y+=8; }
 }
 
-void display_string(char *str)
+void display_string(const char const* str)
 {
     uint8_t i;
     for(i=0; str[i]; i++) 
         display_char(str[i]);
 }
 
-void display_string_inverted(char *str)
+void display_string_inverted(const char const* str)
 {
     uint8_t i;
     for(i=0; str[i]; i++) 
         display_char_inverted(str[i]);
 }
 
-void display_string_xy(char *str, uint16_t x, uint16_t y)
+void display_string_xy(const char const* str, uint16_t x, uint16_t y)
 {
     uint8_t i;
     display.x = x;
@@ -295,7 +295,7 @@ void display_string_xy(char *str, uint16_t x, uint16_t y)
         display_char(str[i]);
 }
 
-void display_string_xy_inverted(char *str, uint16_t x, uint16_t y)
+void display_string_xy_inverted(const char const* str, uint16_t x, uint16_t y)
 {
     uint8_t i;
     display.x = x;
