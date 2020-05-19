@@ -11,3 +11,5 @@ It plays audio in the WAV format. Due to the limitations of the processor it can
 ## Libraries I have used
 + [lafortuna-wav-lib](https://github.com/fatcookies/lafortuna-wav-lib)
 + [FatFs](http://elm-chan.org/fsw/ff/00index_e.html)
++ [lcd](https://secure.ecs.soton.ac.uk/notes/comp2215/tasks/t02/t02ma.zip)(which I have modified)
++ [SmallGraphics](https://github.com/Nick-Bishop/SmallGraphics)
