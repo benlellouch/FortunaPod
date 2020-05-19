@@ -1,6 +1,6 @@
 # FortunaPod
 
-<img src="images/IMG_3205.jpg" width="500" >
+<img src="images/fpod.jpg" width="500" >
 
 ## What is it?
 FortunaPod is a music player for La Ruota della Fortuna board which is powered by an ATMEL AT90USB1286. It provides a simple, responsive and intuitive UI for the user to scroll through and play the songs he has written to his micro sd-card.
