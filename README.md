@@ -1,6 +1,6 @@
 # FortunaPod
 
-<img src="images/IMG_3205.jpg" width="500" >
+<img src="images/fpod.jpg" width="500" >
 
 ## What is it?
 FortunaPod is a music player for La Ruota della Fortuna board which is powered by an ATMEL AT90USB1286. It provides a simple, responsive and intuitive UI for the user to scroll through and play the songs he has written to his micro sd-card.
@@ -11,3 +11,7 @@ It plays audio in the WAV format. Due to the limitations of the processor it can
 ## Libraries I have used
 + [lafortuna-wav-lib](https://github.com/fatcookies/lafortuna-wav-lib)
 + [FatFs](http://elm-chan.org/fsw/ff/00index_e.html)
++ [lcd](https://secure.ecs.soton.ac.uk/notes/comp2215/tasks/t02/t02ma.zip)(which I have modified)
++ [SmallGraphics](https://github.com/Nick-Bishop/SmallGraphics)(only bresenham part)
++ rios
++ ruota
