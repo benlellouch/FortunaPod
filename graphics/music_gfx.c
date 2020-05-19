@@ -100,6 +100,7 @@ void draw_rectangle(int x1, int x2, int y1, int y2, uint16_t col)
     fill_rectangle(rect, col);
 }
 
+// position of string "No song playing" depends on SCREEN_CONTEXT
 void draw_no_song_playing(const SCREEN_CONTEXT const* context)
 {
 	if(*context == SONG_SELECT)
@@ -117,6 +118,7 @@ void draw_no_song_playing(const SCREEN_CONTEXT const* context)
 
 }
 
+// displays song playing with position depending on SCREEN_CONTEXT
 void draw_song_playing(const TCHAR const song[FILE_LENGTH], const SCREEN_CONTEXT const* context)
 {
 	if (*context == SONG_SELECT)

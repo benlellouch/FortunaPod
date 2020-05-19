@@ -8,16 +8,30 @@
 #include "ruota/ruota.h"
 #include "rios/rios.h"
 
+// determines whether dummy songs should be displayed instead of reading sd card
 #define DUMMY true
 
+// array which contains names of songs on display
 TCHAR songs[MAX_SONGS][FILE_LENGTH];
+
+// cursor position
 uint8_t cursor = 0;
+
+// position of cursor which handles music controls 
 CONTROL_CURSOR control_cursor = PAUSE_BUTTON;
-uint8_t num_of_songs = 0;
+
+// cursor position of current song playing
 int8_t current_song = -1;
+
+// cursor postion of next song to be played
 int8_t next_song = -1;
+
+uint8_t num_of_songs = 0;
+
 SCREEN_CONTEXT current_context = SONG_SELECT;
 
+
+// updates cursor graphically based on the direction in which it is going
 void update_cursor(CURSOR_DIRECTION cursor_direction)
 {
 	if (cursor_direction == CURSOR_UP)
@@ -44,6 +58,8 @@ void update_cursor(CURSOR_DIRECTION cursor_direction)
 	}
 }
 
+// TODO merge check_song_playing and check_next_song
+// checks periodically if a song is playing
 int check_song_playing(int state)
 {
 	if(current_song == -1 || !audio_isplaying())
@@ -57,6 +73,7 @@ int check_song_playing(int state)
 	return state;
 }
 
+// checks periodically wether a song as been queued
 int check_next_song(int state)
 {
 	if(!audio_isplaying() && (next_song > -1))
@@ -76,6 +93,7 @@ int check_next_song(int state)
 	return state;
 }
 
+// sets up the home screen
 void set_up_screen()
 {
 	clear_screen();
@@ -83,7 +101,8 @@ void set_up_screen()
 	display_home_screen(&num_of_songs, songs);
 }
 
-
+/** checks periodically if the rotaty encoder has been used
+    and updates cursor accordingly.							**/
 int collect_delta(int state)
 {
 	if(current_context == SONG_SELECT)
@@ -113,6 +132,7 @@ int collect_delta(int state)
 	return state;
 }
 
+// displays music controls
 void show_music_controls()
 {
 	draw_music_controls();
@@ -120,6 +140,8 @@ void show_music_controls()
 	update_control_cursor(&control_cursor);
 }
 
+// TODO merge check_switches and check_music_controls 
+// check for button presses in SONG_SELECT context
 int check_switches(int state)
 {
 	if(current_context == SONG_SELECT)
@@ -132,6 +154,7 @@ int check_switches(int state)
 	return state;
 }
 
+// stops audio from playing and queues previous song
 void play_previous_song()
 {
 	if (current_song > 0 && audio_isplaying())
@@ -146,6 +169,7 @@ void play_previous_song()
 	}
 }
 
+// Pause hasn't been implemented yet so it just stops the song
 void pause_song()
 {
 	if(audio_isplaying())
@@ -158,6 +182,7 @@ void pause_song()
 	}
 }
 
+// stop audio from playing and queues next song
 void play_next_song()
 {
 	if(current_song < (num_of_songs - 1) && audio_isplaying())
@@ -172,7 +197,7 @@ void play_next_song()
 	}
 }
 
-
+// checks periodically for button presses in MUSIC_CONTROL context
 int check_music_controls(int state)
 {
 
@@ -206,13 +231,15 @@ int check_music_controls(int state)
 			}
 		}
 
+		// When UP  pressed in MUSIC_CONTROL: return to home screen
 		if (get_switch_press(_BV(SWN)))
 		{		
 			current_context = SONG_SELECT;
 			hide_music_controls();
 			check_song_playing(0);
-		}
+		} 
 
+		// When RIGHT pressed in MUSIC_CONTROL: move cursor to right
 		if (get_switch_press(_BV(SWE)))
 		{
 			if (control_cursor < 2)
@@ -222,6 +249,7 @@ int check_music_controls(int state)
 			}	
 		}
 
+		// When LEFT pressed in MUSIC_CONTROL: move cursor to left
 		if(get_switch_press(_BV(SWW)))
 		{
 			if(control_cursor > 0)
@@ -244,6 +272,7 @@ void generate_dummy_songs()
 	num_of_songs = 4;
 }
 
+// inits OS and adds tasks
 void os_init()
 {	
 	set_up_screen();
@@ -280,7 +309,8 @@ int main(void) {
 			while(res != FR_OK)
 			{
 				res = f_opendir(&dir, "/");
-			}
+			} // TODO needs to be removed
+
 			if ( res == FR_OK)
 			{
 				FILINFO info;
