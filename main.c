@@ -297,7 +297,7 @@ int main(void) {
 		DIR dir;
 		if(f_mount(&FatFs, "",0) == FR_OK)
 		{
-			 FRESULT res = f_opendir(&dir, "/");
+			FRESULT res = f_opendir(&dir, "/");
 			while(res != FR_OK)
 			{
 				res = f_opendir(&dir, "/");

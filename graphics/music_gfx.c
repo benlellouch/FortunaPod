@@ -201,8 +201,6 @@ void boot_screen_animation()
 	display_string("O");
 	_delay_ms(pod_delay);
 	display_string("D");
-	_delay_ms(pod_delay);
-	display_string_xy("By Benjamin Lellouch", 100, 130);
 	_delay_ms(1500);
 }
 
