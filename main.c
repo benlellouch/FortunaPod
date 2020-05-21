@@ -316,8 +316,6 @@ int main(void) {
 
 				os_init();
 				f_closedir(&dir);
-
-
 			}
 			else
 			{
