@@ -6,7 +6,7 @@
 FortunaPod is a music player for La Ruota della Fortuna board which is powered by an ATMEL AT90USB1286. It provides a simple, responsive and intuitive UI for the user to scroll through and play the songs he has written to his micro sd-card.
 
 ## How to build an executable and upload it to your Fortuna
-Make sure GNU make is installed on your computer. Run make in the directory where the Makefile is located: this will build the program and upload the hex to the Fortuna. 
+Make sure GNU Make is installed on your computer. Run make in the directory where the Makefile is located: this will build the program and upload the hex to the Fortuna. 
 
 ## How to use it
 Once you boot it up (with an sd card inserted) a boot-up animation should appear and you will then be greeting with the home screen. From there you will be able to:
