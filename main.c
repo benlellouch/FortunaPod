@@ -9,7 +9,7 @@
 #include "rios/rios.h"
 
 // determines whether dummy songs should be displayed instead of reading sd card
-#define DUMMY true
+#define DUMMY false
 
 // array which contains names of songs on display
 TCHAR songs[MAX_SONGS][FILE_LENGTH];
@@ -140,19 +140,6 @@ void show_music_controls()
 	update_control_cursor(&control_cursor);
 }
 
-// TODO merge check_switches and check_music_controls 
-// check for button presses in SONG_SELECT context
-int check_switches(int state)
-{
-	if(current_context == SONG_SELECT)
-	{
-		if (get_switch_press(_BV(SWC))) 
-		{
-				next_song =cursor;
-		}
-	}
-	return state;
-}
 
 // stops audio from playing and queues previous song
 void play_previous_song()
@@ -182,7 +169,7 @@ void pause_song()
 	}
 }
 
-// stop audio from playing and queues next song
+// stops audio from playing and queues next song
 void play_next_song()
 {
 	if(current_song < (num_of_songs - 1) && audio_isplaying())
@@ -209,6 +196,12 @@ int check_music_controls(int state)
 			show_music_controls();
 			check_song_playing(0);
 		} 
+
+		if (get_switch_press(_BV(SWC))) 
+		{
+			next_song =cursor;
+			audio_close();
+		}
 	}
 
 	if(current_context == MUSIC_CONTROL)
@@ -282,7 +275,6 @@ void os_init()
 	os_add_task(check_song_playing, 1000,0);
 	os_add_task(collect_delta, 100, 0);
 	os_add_task(check_next_song, 100, 0);
-	os_add_task(check_switches, 100, 0);
 	sei();
 }
 
@@ -323,6 +315,7 @@ int main(void) {
 				}
 
 				os_init();
+				f_closedir(&dir);
 
 
 			}
