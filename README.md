@@ -25,7 +25,7 @@ It plays audio in the WAV format. Due to the limitations of the processor it can
 + rios
 + ruota
 
-## Know issues
+## Known issues
 + This seems to be a Fortuna issue. I have had a hard time getting my SD card accessed successfully (the mounting works fine) by my board which has made development of this application pretty difficult as I could not reliably test the audio playing feature of this app. If your board successfully reads your root directory, and have audio files in the correct format, you should be able to use of all of the app's features (start/stop music, skip to next/previous track etc...).
 + Graphical artifacts might show up when scrolling the wheel at high speed.
 
